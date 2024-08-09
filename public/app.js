@@ -99,7 +99,7 @@ let imageTexture;
 
 // Load and create texture from an image
 const image = new Image();
-image.src = './assets/hanikamu_01.png'; // Path to your preloaded image
+image.src = './assets/hanikamu_03.png'; // Path to your preloaded image
 image.onload = () => {
   const canvasTmp = document.createElement('canvas');
   const ctxTmp = canvasTmp.getContext('2d');
@@ -124,23 +124,24 @@ image.onload = () => {
   console.log('Image texture loaded');
 
   // Set the WebGL viewport to match the canvas size
-  resizeCanvas();
+  resizeCanvas(width, height);
 
   // Load and parse CSV file
-  fetch('./assets/2024716_15562_outside_museum_10min_cooked.csv')
+  fetch('./assets/data/2024718_103116_onami_fumoto_40sec_cooked.csv')
     .then(response => response.text())
     .then(csvText => {
       const chunks = parseCSV(csvText);
-      const selectedChunk = chunks[4]; // Select the first chunk for now 
-      updateImage(selectedChunk, imageData, width, height);
+      const selectedChunk = chunks[1]; // Select the first chunk for now
+      const resampledData = resampleData(selectedChunk, 7650); // Resample
+      updateImage(resampledData, imageData, width, height);
     });
 };
 
 // Adjust the canvas size to fill the entire screen
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+function resizeCanvas(canvasWidth, canvasHeight) {
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  gl.viewport(0, 0, canvasWidth, canvasHeight);
   drawScene();
 }
 
@@ -160,9 +161,23 @@ function parseCSV(csvText) {
   return chunks;
 }
 
+// Function to resample data using linear interpolation
+function resampleData(data, targetLength) {
+  const resampledData = new Array(targetLength);
+  const factor = (data.length - 1) / (targetLength - 1);
+  for (let i = 0; i < targetLength; i++) {
+    const pos = i * factor;
+    const low = Math.floor(pos);
+    const high = Math.ceil(pos);
+    const weight = pos - low;
+    resampledData[i] = (1 - weight) * data[low] + weight * data[high];
+  }
+  return resampledData;
+}
+
 // Function to update the image based on data
 function updateImage(data, imageData, width, height) {
-  const rowsPerSample = height / 510; // Each sample should correspond to about 1.54 rows
+  const rowsPerSample = height / data.length; // Adjust based on resampled data length
 
   // Normalize the intensity values to range [0, 1]
   const maxValue = Math.max(...data);
@@ -171,7 +186,7 @@ function updateImage(data, imageData, width, height) {
 
   const stretchedImageData = new Uint8Array(width * height * 4); // Array to hold stretched image data (RGBA for each pixel)
 
-  for (let y = 0; y < 510; y++) {
+  for (let y = 0; y < data.length; y++) {
     const value = normalizedData[y];
     const startRow = Math.floor(y * rowsPerSample);
     const endRow = Math.floor((y + 1) * rowsPerSample);
@@ -203,6 +218,8 @@ function updateImage(data, imageData, width, height) {
 
 // Function to draw the scene
 function drawScene() {
+  // Clear the canvas with a specific background color (white in this case)
+  gl.clearColor(1.0, 1.0, 1.0, 1.0); // White background
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   if (imageTexture) {
@@ -216,3 +233,18 @@ function drawScene() {
 
 // Initial draw
 drawScene();
+
+// Function to save the canvas as a PNG file
+function saveCanvasAsPng() {
+  // Ensure the canvas is fully rendered
+  drawScene();
+
+  // Save the canvas as a PNG file
+  const link = document.createElement('a');
+  link.download = 'canvas_image.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// Add event listener to the canvas to save it as a PNG on click
+canvas.addEventListener('click', saveCanvasAsPng);
