@@ -78,10 +78,10 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 const texCoordBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 const texCoords = [
-  0, 0,
-  1, 0,
-  0, 1,
-  1, 1,
+  0, 1,  // Top-left corner
+  1, 1,  // Top-right corner
+  0, 0,  // Bottom-left corner
+  1, 0,  // Bottom-right corner
 ];
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
 
@@ -104,8 +104,8 @@ image.onload = () => {
   const canvasTmp = document.createElement('canvas');
   const ctxTmp = canvasTmp.getContext('2d');
 
-  const width = 12000;
-  const height = 7874;
+  const width = 7087;
+  const height = 4724;
   canvasTmp.width = width;
   canvasTmp.height = height;
   ctxTmp.drawImage(image, 0, 0, width, height);
@@ -127,12 +127,12 @@ image.onload = () => {
   resizeCanvas(width, height);
 
   // Load and parse CSV file
-  fetch('./assets/data/2024718_103116_onami_fumoto_40sec_cooked.csv')
+  fetch('./assets/data/2024717_16243_fudouike_10min_cooked.csv')
     .then(response => response.text())
     .then(csvText => {
       const chunks = parseCSV(csvText);
-      const selectedChunk = chunks[1]; // Select the first chunk for now
-      const resampledData = resampleData(selectedChunk, 7650); // Resample
+      const selectedChunk = chunks[0]; // Select the first chunk for now
+      const resampledData = resampleData(selectedChunk, 5100); // Resample
       updateImage(resampledData, imageData, width, height);
     });
 };
@@ -188,8 +188,8 @@ function updateImage(data, imageData, width, height) {
 
   for (let y = 0; y < data.length; y++) {
     const value = normalizedData[y];
-    const startRow = Math.floor(y * rowsPerSample);
-    const endRow = Math.floor((y + 1) * rowsPerSample);
+    const startRow = Math.floor((data.length - 1 - y) * rowsPerSample); // Flip the row index
+    const endRow = Math.floor((data.length - y) * rowsPerSample);
     const rowWidth = Math.floor(width * value);
 
     for (let row = startRow; row < endRow; row++) {
@@ -215,6 +215,7 @@ function updateImage(data, imageData, width, height) {
 
   drawScene();
 }
+
 
 // Function to draw the scene
 function drawScene() {
