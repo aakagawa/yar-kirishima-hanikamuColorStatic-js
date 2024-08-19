@@ -127,7 +127,8 @@ image.onload = () => {
   resizeCanvas(width, height);
 
   // Load and parse CSV file
-  fetch('./assets/data/2024717_16243_fudouike_10min_cooked.csv')
+  // /Users/asukaakagawa/Documents/,documents/,asanokūkan/design/,projects/,kirishima/software/hanikamu_color_static/public/assets/data/01/2024717_16243_fudouike_10min_cooked.csv
+  fetch('./assets/data/02/2024817_114925_fudoudaki_waterfall_18min_cooked.csv')
     .then(response => response.text())
     .then(csvText => {
       const chunks = parseCSV(csvText);
