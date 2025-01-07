@@ -3,5 +3,6 @@ node_modules/
 *.jpg
 *.png
 *.tif
+*.csv
 
 .DS_Store

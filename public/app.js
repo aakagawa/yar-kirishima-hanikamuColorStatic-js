@@ -99,13 +99,13 @@ let imageTexture;
 
 // Load and create texture from an image
 const image = new Image();
-image.src = './assets/hanikamu_03.png'; // Path to your preloaded image
+image.src = './assets/hanikamu_02.png'; // Path to your preloaded image
 image.onload = () => {
   const canvasTmp = document.createElement('canvas');
   const ctxTmp = canvasTmp.getContext('2d');
 
-  const width = 7087;
-  const height = 4724;
+  const width = 12000;
+  const height = 7874;
   canvasTmp.width = width;
   canvasTmp.height = height;
   ctxTmp.drawImage(image, 0, 0, width, height);
@@ -127,8 +127,7 @@ image.onload = () => {
   resizeCanvas(width, height);
 
   // Load and parse CSV file
-  // /Users/asukaakagawa/Documents/,documents/,asanokūkan/design/,projects/,kirishima/software/hanikamu_color_static/public/assets/data/01/2024717_16243_fudouike_10min_cooked.csv
-  fetch('./assets/data/02/2024817_114925_fudoudaki_waterfall_18min_cooked.csv')
+  fetch('./assets/data/01/2024717_16243_fudouike_10min_cooked.csv')
     .then(response => response.text())
     .then(csvText => {
       const chunks = parseCSV(csvText);
@@ -176,7 +175,7 @@ function resampleData(data, targetLength) {
   return resampledData;
 }
 
-// Function to update the image based on data
+// Function to update the image based on data (Normalized) 
 function updateImage(data, imageData, width, height) {
   const rowsPerSample = height / data.length; // Adjust based on resampled data length
 
@@ -216,6 +215,44 @@ function updateImage(data, imageData, width, height) {
 
   drawScene();
 }
+
+// // Function to update the image based on data (Raw)
+// function updateImage(data, imageData, width, height) {
+//   const rowsPerSample = height / data.length; // Adjust based on resampled data length
+
+//   const maxValue = 50000; // Set your desired maximum intensity value here
+
+//   const stretchedImageData = new Uint8Array(width * height * 4); // Array to hold stretched image data (RGBA for each pixel)
+
+//   for (let y = 0; y < data.length; y++) {
+//     const value = data[y] / maxValue; // Scale the value relative to the fixed maximum
+//     const startRow = Math.floor((data.length - 1 - y) * rowsPerSample); // Flip the row index
+//     const endRow = Math.floor((data.length - y) * rowsPerSample);
+//     const rowWidth = Math.floor(width * value);
+
+//     for (let row = startRow; row < endRow; row++) {
+//       for (let x = 0; x < rowWidth; x++) {
+//           const srcIndex = (row * width + Math.floor(x / value)) * 4;
+//           const destIndex = (row * width + x) * 4;
+//           stretchedImageData[destIndex] = imageData.data[srcIndex];
+//           stretchedImageData[destIndex + 1] = imageData.data[srcIndex + 1];
+//           stretchedImageData[destIndex + 2] = imageData.data[srcIndex + 2];
+//           stretchedImageData[destIndex + 3] = imageData.data[srcIndex + 3];
+//       }
+//     }
+//   }
+
+//   gl.bindTexture(gl.TEXTURE_2D, imageTexture);
+//   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, stretchedImageData);
+//   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+//   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+//   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+//   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+//   console.log('Stretched image texture updated');
+
+//   drawScene();
+// }
 
 
 // Function to draw the scene
